@@ -42,21 +42,6 @@
 	camera.position.z = 400;
 	camera.lookAt (new THREE.Vector3(0,0,0));
 	
-	var floorTexture = new THREE.ImageUtils.loadTexture( 'images/myphoto.jpg' );
-	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
-	floorTexture.repeat.set( 4, 4 );
-	var floorMaterial = new THREE.MeshLambertMaterial( { map: floorTexture, side: THREE.DoubleSide } );
-	// textured floor might be too bright in the shadow
-	// use MeshLambertMaterial to show "modulate" effect
-	// use MeshBasicMateial to show "replace" effect
-	//var floorMaterial = new THREE.MeshLambertMaterial ({color: 0x1123fe, side: THREE.DoubleSide});
-	
-	var floorGeometry = new THREE.PlaneGeometry(500, 500);
-	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
-	floor.position.y = -25;
-	//floor.rotation.x = Math.PI / 2;
-	scene.add(floor);
-	
 	var gridXZ = new THREE.GridHelper(100, 10);
 	gridXZ.setColors( new THREE.Color(0xff0000), new THREE.Color(0xffffff) );
 	scene.add(gridXZ);
