@@ -56,6 +56,10 @@
 	floor.position.y = -25;
 	//floor.rotation.x = Math.PI / 2;
 	scene.add(floor);
+	
+	var gridXZ = new THREE.GridHelper(100, 10);
+	gridXZ.setColors( new THREE.Color(0xff0000), new THREE.Color(0xffffff) );
+	scene.add(gridXZ);
 
 	var pointLight = new THREE.PointLight (0xffffff);
 	pointLight.position.set (0,300,200);
