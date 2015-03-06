@@ -39,7 +39,7 @@ function init()
 	cube = new THREE.Mesh (new THREE.BoxGeometry (20,5,8),
 							new THREE.MeshLambertMaterial ({color: 0x1ec876}));
 
-	cube.position.set (-60, 0, 10);
+	cube.position.set (60, 0, 10);
 	scene.add (cube);
 
 	camera = new THREE.PerspectiveCamera (45, width/height, 1, 10000);
@@ -58,8 +58,7 @@ function init()
 	var floorGeometry = new THREE.PlaneGeometry(300, 300);//, 10, 10);  // not clear what segment does
 	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
 	floor.position.y = -0.5;
-	floor.rotation.z = Math.PI;
-	floor.rotation.x = Math.PI / 2;
+	floor.rotation.x = -Math.PI / 2;
 	scene.add(floor);
 /*
 	var gridXZ = new THREE.GridHelper(100, 10);
