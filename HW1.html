@@ -1,0 +1,169 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+	canvas {
+		position: fixed;
+		top: 0;
+		left: 0;
+	}
+</style>
+</head>
+
+<body>
+
+<audio id="soundtrack" autoplay loop style="display:none">
+<source src="music/intro-future.mp3" type='audio/mp3'>
+</audio>
+
+<script src="js/r69/three.min.js"></script>
+<script src="js/Stats.js"></script>
+<script src="js/Detector.js"></script>
+
+<script>
+
+var clock = new THREE.Clock();
+var scene, renderer, camera;
+var sun, earth, moon;
+var Eangle = 0,  Mangle = 0;
+var dt;
+var turn = 1;
+var soundTrack;
+
+init();
+animate();
+
+function init()
+{
+	soundTrack = document.getElementById ('soundtrack');
+	
+	var width = window.innerWidth;
+	var height = window.innerHeight;
+
+	// create and start the renderer; choose antialias setting.
+	if ( Detector.webgl )
+		renderer = new THREE.WebGLRenderer( {antialias:true} );
+	else
+		renderer = new THREE.CanvasRenderer(); 	
+
+	renderer.setSize (width, height);
+	document.body.appendChild (renderer.domElement);
+
+	// STATS
+	stats = new Stats();
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.top = '0px';
+	stats.domElement.style.zIndex = 100;
+	document.body.appendChild( stats.domElement );	
+
+	scene = new THREE.Scene();
+	
+	//THREE.ImageUtils.crossOrigin = '';
+    var sunTexture = THREE.ImageUtils.loadTexture("images/sun.jpg");
+    var earthTexture = THREE.ImageUtils.loadTexture("images/earth.jpg");
+    var moonTexture = THREE.ImageUtils.loadTexture("images/moon.jpg");
+	
+	var sr = 6.96*10; //6.96×10^8m
+	var er = 6.371*2; //6.371×10^6m
+	var mr = 1.74*2; //1.74×10^6m
+	
+	// sun begin
+	var sunGeometry = new THREE.SphereGeometry (sr,sr,sr);
+	var sunMaterial = new THREE.MeshLambertMaterial ({map : sunTexture});
+	sun = new THREE.Mesh (sunGeometry, sunMaterial);
+	scene.add (sun);
+	// sun end
+	
+	// earth begin
+	var earthGeometry = new THREE.SphereGeometry (er,er,er);
+	var earthMaterial = new THREE.MeshLambertMaterial ({map : earthTexture});
+	earth = new THREE.Mesh (earthGeometry, earthMaterial);
+	scene.add (earth);
+	// earth end
+	
+	// moon begin
+	var moonGeometry = new THREE.SphereGeometry (mr,mr,mr);
+	var moonMaterial = new THREE.MeshLambertMaterial ({map : moonTexture});
+	moon = new THREE.Mesh (moonGeometry, moonMaterial);
+	scene.add (moon);
+	// moon end
+
+	camera = new THREE.PerspectiveCamera (45, width/height, 0.1, 10000);
+	camera.position.y = 160;
+	camera.position.z = 400;
+	camera.lookAt (new THREE.Vector3(0,0,0));
+
+	var skyboxGeometry = new THREE.BoxGeometry (1000,1000,1000);
+	var skyboxMaterial = new THREE.MeshBasicMaterial ({color: 0x1f1f1f, side:THREE.BackSide});
+	var skybox = new THREE.Mesh (skyboxGeometry, skyboxMaterial);
+	scene.add (skybox);
+
+	var gridXZ = new THREE.GridHelper(100, 10);
+	gridXZ.setColors( new THREE.Color(0xff0000), new THREE.Color(0xffffff) );
+	//scene.add(gridXZ);
+
+	var pointLight = new THREE.PointLight (0xffffff);
+	pointLight.position.set (0,300,200);
+	scene.add (pointLight);
+	
+	window.addEventListener ('resize', onWindowResize, false);
+}
+
+function onWindowResize ()
+{
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	renderer.setSize (window.innerWidth, window.innerHeight);
+}
+
+function showMoon(Ex, Ez)
+{
+	Mangle -= dt*6.28*12;
+	
+	var r = 38.5; //3.85×10^8m
+
+	var Mx = Ex + r*Math.cos(Mangle);
+	var Mz = Ez + r*Math.sin(Mangle);
+	moon.position.set (Mx,0,Mz);
+
+	moon.rotation.y -= 12*dt;
+}
+
+function showEarth()
+{
+	Eangle -= dt*6.28;
+	
+	var r = 150; //1.50×10^11m
+	
+	var Ex = r*Math.cos(Eangle);
+	var Ez = r*Math.sin(Eangle);
+	earth.position.set (Ex,0,Ez);
+
+	earth.rotation.y -= 365*dt;
+	
+	showMoon(Ex, Ez);
+}
+
+function animate()
+{
+	dt = clock.getDelta() / 10;
+	
+	stats.update();
+	showEarth();
+	
+	requestAnimationFrame ( animate );  
+	render();  
+}
+
+
+function render()
+{
+	renderer.render (scene, camera);
+}
+
+
+</script>
+</body>
+
+</html>
