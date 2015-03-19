@@ -261,8 +261,8 @@ function showEarth()
 	
 	earth.position.set (Ex,0,Ez);
 	earth2.position.set (Ex,0,Ez);
-	if(turn) earth.rotation.y -= 365*dt;
-	if(turn) earth2.rotation.y -= 365*dt;
+	if(turn) earth.rotation.y += 365*dt;
+	if(turn) earth2.rotation.y += 365*dt;
 	
 	light.target = earth;
 	showMoon(Ex, Ez);
