@@ -1,169 +1,302 @@
 
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
 <style>
-	canvas {
-		position: fixed;
-		top: 0;
-		left: 0;
+	body {
+		background-color: #fff;
+		color: #111;
+		margin: 0px;
+		overflow: hidden;
+		font-family: Monospace;
+		font-size: 20px;
+		position: absolute;
 	}
+	#info {
+		position: absolute;
+		top: 0px; width: 100%;
+		
+		padding: 5px;
+		text-align: center;
+		color: #ffff00
+	}
+	strong {color:red}
 </style>
 </head>
-
 <body>
+
+<div id="info">
+    3W3D HW1 <br/>
+	type <strong>T</strong>urn to toggle rotation   <br/>
+	type <strong>M</strong>ove to toggle revolution  <br/>
+</div>
 
 <audio id="soundtrack" autoplay loop style="display:none">
 <source src="music/intro-future.mp3" type='audio/mp3'>
 </audio>
 
 <script src="js/r69/three.min.js"></script>
-<script src="js/Stats.js"></script>
+<script src="http://stemkoski.github.io/Three.js/js/Three58.js"></script>
+
 <script src="js/Detector.js"></script>
+<script src="js/OrbitControls.js"></script>
+<script src="js/Stats.js"></script>
+<script src="js/KeyboardState.js"></script>
+
+<!-- Note the additional JS files! always need all of these for postprocessing. -->
+<script src="js/postprocessing/EffectComposer.js"></script>
+<script src="js/postprocessing/RenderPass.js"></script>
+<script src="http://stemkoski.github.io/Three.js/js/postprocessing/ShaderPass.js"></script>
+<script src="http://stemkoski.github.io/Three.js/js/postprocessing/MaskPass.js"></script>
+<script src="http://stemkoski.github.io/Three.js/js/shaders/CopyShader.js"></script>
+
+<!-- separate out the shaders specific to this demo -->
+<script src="http://stemkoski.github.io/Three.js/js/shaders/AdditiveBlendShader.js"></script>
+<script src="http://threejs.org/examples/js/shaders/HorizontalBlurShader.js"></script>
+<script src="http://threejs.org/examples/js/shaders/VerticalBlurShader.js"></script>
 
 <script>
+// standard global variables
+var container, scene, camera, renderer, stats;
+var controls, keyboard = new KeyboardState();
+// custom global variables
+var composer2, finalComposer;
 
+var SCREEN_WIDTH = 1600, SCREEN_HEIGHT = 900;
+var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+var turn = 1, move = 1;
 var clock = new THREE.Clock();
-var scene, renderer, camera;
-var sun, earth, moon;
-var Eangle = 0,  Mangle = 0;
-var dt;
-var turn = 1;
-var soundTrack;
+var sun, earth, earth2, moon, moon2, light;
+var Eangle = 0, Mangle = 0, dt = 0;
 
 init();
 animate();
 
-function init()
+// FUNCTIONS 		
+function init() 
 {
 	soundTrack = document.getElementById ('soundtrack');
+	// SCENE
+	scene = new THREE.Scene();
 	
-	var width = window.innerWidth;
-	var height = window.innerHeight;
-
-	// create and start the renderer; choose antialias setting.
+	var SUN = 6.96*10; //6.96×10^8m
+	var EARTH = 6.371*3; //6.371×10^6m
+	var MOON = 1.74*3; //1.74×10^6m
+	
+	// RENDERER
 	if ( Detector.webgl )
 		renderer = new THREE.WebGLRenderer( {antialias:true} );
 	else
-		renderer = new THREE.CanvasRenderer(); 	
-
-	renderer.setSize (width, height);
+		renderer = new THREE.CanvasRenderer(); 
+	
+	// CAMERA
+	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+	camera.position.set(0,150,400);
+	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+	
 	document.body.appendChild (renderer.domElement);
-
-	// STATS
-	stats = new Stats();
-	stats.domElement.style.position = 'absolute';
-	stats.domElement.style.top = '0px';
-	stats.domElement.style.zIndex = 100;
-	document.body.appendChild( stats.domElement );	
-
-	scene = new THREE.Scene();
 	
-	//THREE.ImageUtils.crossOrigin = '';
-    var sunTexture = THREE.ImageUtils.loadTexture("images/sun.jpg");
-    var earthTexture = THREE.ImageUtils.loadTexture("images/earth.jpg");
-    var moonTexture = THREE.ImageUtils.loadTexture("images/moon.jpg");
+	controls = new THREE.OrbitControls( camera, renderer.domElement );
+	// LIGHT
+	light = new THREE.SpotLight( 0xffffff, 1.5 );
+	light.position.set( 0, 0, 0 );
+	light.castShadow = true;
+	light.shadowCameraNear = 1;
+	light.shadowCameraFar = 2000;
+	light.shadowCameraFov = 50;
+	light.shadowBias = -0.00022;
+	light.shadowDarkness = 1;
+	light.shadowMapWidth = 2048;
+	light.shadowMapHeight = 2048;
+	/*
+	Alight = new THREE.AmbientLight( 0xffffff );
+	scene.add( Alight );
+	*/
+	scene.add( light );
 	
-	var sr = 6.96*10; //6.96×10^8m
-	var er = 6.371*2; //6.371×10^6m
-	var mr = 1.74*2; //1.74×10^6m
+	var sunGeometry = new THREE.SphereGeometry( SUN, 72, 72 );
+	var sunTexture = new THREE.ImageUtils.loadTexture( 'images/sun.jpg' );
+	var sunMaterial = new THREE.MeshBasicMaterial( { map: sunTexture } );
+	sun = new THREE.Mesh( sunGeometry, sunMaterial );
+	sun.position = light.position;
+	scene.add(sun);
 	
-	// sun begin
-	var sunGeometry = new THREE.SphereGeometry (sr,sr,sr);
-	var sunMaterial = new THREE.MeshLambertMaterial ({map : sunTexture});
-	sun = new THREE.Mesh (sunGeometry, sunMaterial);
-	scene.add (sun);
-	// sun end
+	var earthGeometry = new THREE.SphereGeometry( EARTH, 72, 72 ); 
+	var earthTexture = new THREE.ImageUtils.loadTexture( 'images/earth.jpg' );
+	var earthMaterial = new THREE.MeshLambertMaterial( {map: earthTexture} ); 
+	earth = new THREE.Mesh(earthGeometry, earthMaterial);
+	earth.position.set(250, 0, -250);
+	scene.add(earth);
 	
-	// earth begin
-	var earthGeometry = new THREE.SphereGeometry (er,er,er);
-	var earthMaterial = new THREE.MeshLambertMaterial ({map : earthTexture});
-	earth = new THREE.Mesh (earthGeometry, earthMaterial);
-	scene.add (earth);
-	// earth end
+	var moonGeometry = new THREE.SphereGeometry( MOON, 72, 72 ); 
+	var moonTexture = new THREE.ImageUtils.loadTexture( 'images/moon.jpg' );
+	var moonMaterial = new THREE.MeshLambertMaterial( {map: moonTexture} ); 
+	moon = new THREE.Mesh(moonGeometry, moonMaterial);
+	moon.position.set(500, 0, -250);
+	scene.add(moon);
 	
-	// moon begin
-	var moonGeometry = new THREE.SphereGeometry (mr,mr,mr);
-	var moonMaterial = new THREE.MeshLambertMaterial ({map : moonTexture});
-	moon = new THREE.Mesh (moonGeometry, moonMaterial);
-	scene.add (moon);
-	// moon end
+	////////////////////////////////////////////////////////////////
+	// set up secondary scene 
+	////////////////////////////////////////////////////////////////
+	
+	var scene2 = new THREE.Scene();
+	// lights
+	//scene2.add( new THREE.PointLight( 0xffffff ) );
+	//scene2.add( new THREE.AmbientLight( 0xffffff ) );
+	// camera
+	camera2 = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+	camera2.position = camera.position;
+	camera2.rotation = camera.rotation;
 
-	camera = new THREE.PerspectiveCamera (45, width/height, 0.1, 10000);
-	camera.position.y = 160;
-	camera.position.z = 400;
-	camera.lookAt (new THREE.Vector3(0,0,0));
-
-	var skyboxGeometry = new THREE.BoxGeometry (1000,1000,1000);
-	var skyboxMaterial = new THREE.MeshBasicMaterial ({color: 0x1f1f1f, side:THREE.BackSide});
-	var skybox = new THREE.Mesh (skyboxGeometry, skyboxMaterial);
-	scene.add (skybox);
-
-	var gridXZ = new THREE.GridHelper(100, 10);
-	gridXZ.setColors( new THREE.Color(0xff0000), new THREE.Color(0xffffff) );
-	//scene.add(gridXZ);
-
-	var pointLight = new THREE.PointLight (0xffffff);
-	pointLight.position.set (0,300,200);
-	scene.add (pointLight);
+	// objects
+	var lightGeometry = new THREE.SphereGeometry( SUN*1.1, 72, 72 );
+	var lightMaterial = new THREE.MeshBasicMaterial( { color: 0xff8800, transparent:true, opacity:0.50 } );
+	var sunLight = new THREE.Mesh( lightGeometry, lightMaterial );
+	sunLight.position = light.position;
+	scene2.add(sunLight);
 	
-	window.addEventListener ('resize', onWindowResize, false);
+	var earthGeometry2 = new THREE.SphereGeometry( EARTH, 72, 72 ); 
+	var earthTexture2 = new THREE.ImageUtils.loadTexture( 'images/earth.jpg' );
+	var earthMaterial2 = new THREE.MeshLambertMaterial( {map: earthTexture2} ); 
+	earth2 = new THREE.Mesh(earthGeometry2, earthMaterial2);
+	earth2.position = earth.position;
+	scene2.add(earth2);
+	
+	var moonGeometry2 = new THREE.SphereGeometry( MOON, 72, 72 ); 
+	var moonTexture2 = new THREE.ImageUtils.loadTexture( 'images/moon.jpg' );
+	var moonMaterial2 = new THREE.MeshLambertMaterial( {map: moonTexture2} ); 
+	moon2 = new THREE.Mesh(moonGeometry2, moonMaterial2);
+	moon2.position.set(500, 0, -250);
+	scene2.add(moon2);
+	
+	moon.castShadow = true; moon.receiveShadow = true;
+	moon2.castShadow = true; moon2.receiveShadow = true;
+	earth.castShadow = true; earth.receiveShadow = true;
+	earth2.castShadow = true; earth2.receiveShadow = true;
+	
+	renderer.shadowMapEnabled = true;
+	renderer.shadowMapType = THREE.PCFShadowMap;
+	
+	// prepare secondary composer
+	var renderTargetParameters = 
+		{ minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, 
+		  format: THREE.RGBFormat, stencilBuffer: false };
+	var renderTarget = new THREE.WebGLRenderTarget( SCREEN_WIDTH, SCREEN_HEIGHT, renderTargetParameters );  /////////////////
+	composer2 = new THREE.EffectComposer( renderer, renderTarget );
+	
+	// prepare the secondary render's passes
+	var render2Pass = new THREE.RenderPass( scene2, camera2 );
+	composer2.addPass( render2Pass );
+	
+	// special effects to be applied to secondary render:
+	var effectHorizBlur = new THREE.ShaderPass( THREE.HorizontalBlurShader );
+	var effectVertiBlur = new THREE.ShaderPass( THREE.VerticalBlurShader );
+	effectHorizBlur.uniforms[ "h" ].value = 2 / window.innerWidth;
+	effectVertiBlur.uniforms[ "v" ].value = 2 / window.innerHeight;
+	composer2.addPass( effectHorizBlur );
+	composer2.addPass( effectVertiBlur );
+	
+	////////////////////////////////////////////////////////////////////////
+	// final composer will blend composer2.render() results with the scene 
+	////////////////////////////////////////////////////////////////////////
+	
+	
+	
+	// prepare final composer
+	finalComposer = new THREE.EffectComposer( renderer, renderTarget );
+
+	// prepare the final render's passes
+	var renderModel = new THREE.RenderPass( scene, camera );
+	finalComposer.addPass( renderModel );
+
+	var effectBlend = new THREE.ShaderPass( THREE.AdditiveBlendShader, "tDiffuse1" );
+	effectBlend.uniforms[ 'tDiffuse2' ].value = composer2.renderTarget2;
+	effectBlend.renderToScreen = true;
+	finalComposer.addPass( effectBlend );
+	
+	window.addEventListener ('resize', onWindowResize, true);
 }
 
-function onWindowResize ()
+function onWindowResize()
 {
-	camera.aspect = window.innerWidth / window.innerHeight;
+	SCREEN_WIDTH = window.innerWidth;
+	SCREEN_HEIGHT = window.innerHeight;
+	ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT;
+	
+	camera.aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
 	camera.updateProjectionMatrix();
-	renderer.setSize (window.innerWidth, window.innerHeight);
+	camera2.aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
+	camera2.updateProjectionMatrix();
+	
+	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+	renderTarget.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
 }
 
 function showMoon(Ex, Ez)
 {
-	Mangle -= dt*6.28*12;
+	if(move) Mangle -= dt*12*6.28;
 	
 	var r = 38.5; //3.85×10^8m
 
 	var Mx = Ex + r*Math.cos(Mangle);
 	var Mz = Ez + r*Math.sin(Mangle);
+	
 	moon.position.set (Mx,0,Mz);
-
-	moon.rotation.y -= 12*dt;
+	moon2.position.set (Mx,0,Mz);
+	if(turn) moon.rotation.y += 12*dt*6.28;
+	if(turn) moon2.rotation.y += 12*dt*6.28;
 }
 
 function showEarth()
 {
-	Eangle -= dt*6.28;
+	if(move) Eangle -= dt*6.28;
 	
 	var r = 150; //1.50×10^11m
 	
 	var Ex = r*Math.cos(Eangle);
 	var Ez = r*Math.sin(Eangle);
-	earth.position.set (Ex,0,Ez);
-
-	earth.rotation.y -= 365*dt;
 	
+	earth.position.set (Ex,0,Ez);
+	earth2.position.set (Ex,0,Ez);
+	if(turn) earth.rotation.x = 23.5*3.14/180;
+	if(turn) earth2.rotation.x = 23.5*3.14/180;
+	if(turn) earth.rotation.y -= 365*dt;
+	if(turn) earth2.rotation.y -= 365*dt;
+	
+	light.target = earth;
 	showMoon(Ex, Ez);
 }
 
-function animate()
+function animate() 
 {
-	dt = clock.getDelta() / 10;
+	dt = clock.getDelta() / 100;
 	
-	stats.update();
+	// stats.update();
 	showEarth();
 	
-	requestAnimationFrame ( animate );  
-	render();  
+    requestAnimationFrame( animate );
+	render();
+	update();
 }
 
-
-function render()
+function update()
 {
-	renderer.render (scene, camera);
+	controls.update();
+	keyboard.update();         // this is required; this is a different keyboard callback
+	if ( keyboard.down("T"))  // must use upper case!!
+		turn ^= 1;               
+	if ( keyboard.down("M"))  // must use upper case!!
+		move ^= 1;
 }
 
+function render() 
+{
+	composer2.render();
+	finalComposer.render();
+}
 
+onWindowResize();
 </script>
-</body>
 
+</body>
 </html>

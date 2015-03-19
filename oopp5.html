@@ -1,0 +1,194 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+	body {
+		background-color: #fff;
+		color: #111;
+		margin: 0px;
+		overflow: hidden;
+		font-family: Monospace;
+		font-size: 20px;
+		position: absolute;
+	}
+	#info {
+		position: absolute;
+		top: 0px; width: 100%;
+		
+		padding: 5px;
+		text-align: center;
+		color: #ffff00
+	}
+	strong {color:red}
+</style>
+</head>
+
+<body>
+
+<div id="container"></div>
+<div id="info">
+    webgl tutorial 17 <br/>
+	Shadow Map<br/>
+	Press Z to stop rotation
+</div>
+
+
+<script src="js/r69/three.min.js"></script>
+<script src="js/OrbitControls.js"></script>
+<script src="js/KeyboardState.js"></script>
+
+<script>
+////////////////////////////////////////////////////
+var clock = new THREE.Clock();
+var scene, renderer, camera;
+var controls, keyboard = new KeyboardState();
+var spheres = [], lsphere, light;
+var angle = 0;
+var turn = 1;
+
+init();
+animate();
+
+function init()
+{
+	var width = window.innerWidth;
+	var height = window.innerHeight;
+
+	renderer = new THREE.WebGLRenderer({antialias: true});
+	renderer.setSize (width, height);
+	renderer.setClearColor (0x888888);
+
+	document.body.appendChild (renderer.domElement);
+
+	scene = new THREE.Scene();
+	
+	/////////////
+	
+	
+	//THREE.ImageUtils.crossOrigin = '';
+    var sunTexture = THREE.ImageUtils.loadTexture("images/sun.jpg");
+    var earthTexture = THREE.ImageUtils.loadTexture("images/earth.jpg");
+    var moonTexture = THREE.ImageUtils.loadTexture("images/moon.jpg");
+	
+	var sr = 6.96*10; //6.96×10^8m
+	var er = 6.371*3; //6.371×10^6m
+	var mr = 1.74*3; //1.74×10^6m
+	
+	// sun begin
+	var sunGeometry = new THREE.SphereGeometry (sr,36,36);
+	var sunMaterial = new THREE.MeshLambertMaterial ({map : sunTexture});
+	sun = new THREE.Mesh (sunGeometry, sunMaterial);
+	//scene.add (sun);
+	// sun end
+	
+	var ds = 1000;
+	var ambientLight = new THREE.PointLight (0xffffff);
+	//ambientLight.position.set (0,0,0);
+	//scene.add (ambientLight);
+	
+	// earth begin
+	var earthGeometry = new THREE.SphereGeometry (er,36,36);
+	var earthMaterial = new THREE.MeshLambertMaterial ({map : earthTexture});
+	earth = new THREE.Mesh (earthGeometry, earthMaterial);
+	earth.castShadow = true; earth.receiveShadow = true;
+	scene.add (earth);
+	// earth end
+	
+	// moon begin
+	var moonGeometry = new THREE.SphereGeometry (mr,36,36);
+	var moonMaterial = new THREE.MeshLambertMaterial ({map : moonTexture});
+	moon = new THREE.Mesh (moonGeometry, moonMaterial);
+	moon.castShadow = true; moon.receiveShadow = true;
+	moon.position.set(0, -200, 0);
+	scene.add (moon);
+	// moon end
+	
+	earth.castShadow = true; earth.receiveShadow = true;
+	moon.castShadow = true; moon.receiveShadow = true;
+	/////////////
+
+	// FLOOR
+
+	// balls
+	var sphereMaterial = new THREE.MeshLambertMaterial ({color: 0x11fe41});
+	var sphereGeometry = new THREE.SphereGeometry(40,32,32);
+	for (var i = 0; i < 4; i++) { 
+		spheres[i] = new THREE.Mesh (sphereGeometry, sphereMaterial);
+		scene.add (spheres[i]);
+	}
+	
+	camera = new THREE.PerspectiveCamera (45, width/height, 0.1, 10000000);
+	camera.position.y = 160;
+	camera.position.z = 400;
+	camera.lookAt (new THREE.Vector3(0,0,0));
+	
+	// add control here (after the camera is defined)
+	controls = new THREE.OrbitControls (camera, renderer.domElement);
+	
+	// shadow map settings
+	// light setting
+	light = new THREE.SpotLight( 0xffffff, 1.5 );
+	light.position.set(0,0,0);
+	light.castShadow = true;
+	light.shadowCameraNear = 200;
+	light.shadowCameraFar = camera.far;
+	light.shadowCameraFov = 50;
+	light.shadowBias = -0.00022;
+	light.shadowDarkness = 1;
+	light.shadowMapWidth = 2048;
+	light.shadowMapHeight = 2048;
+	scene.add( light );
+				
+	for (var i = 0; i < 4; i++) {
+		spheres[i].castShadow = true; spheres[i].receiveShadow = true;
+	}
+	renderer.shadowMapEnabled = true;
+	renderer.shadowMapType = THREE.PCFShadowMap;
+	
+	window.addEventListener ('resize', onWindowResize, false);	
+}
+
+function animate()
+{
+	var dt = clock.getDelta();
+
+	if (turn) angle += dt/5;	
+	
+	for (var i = 0; i < 4; i++) {
+		spheres[i].position.set (100*Math.cos(angle+i*Math.PI/2), 80, 100*Math.sin(angle+i*Math.PI/2));
+	}
+	
+	//spheres[0].position.set (0, 0, 0);
+	spheres[1].position.set (100, 100, 100);
+	spheres[2].position.set (200, 200, 200);
+	
+	light.position.set (0, 0, 0);
+
+	requestAnimationFrame ( animate );  
+	update();
+	render(); 
+}
+
+function update()
+{
+	controls.update();
+	keyboard.update();         
+	if ( keyboard.down("Z"))  // must use upper case!!
+		turn ^= 1;               
+}
+function onWindowResize()
+{
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	renderer.setSize (window.innerWidth, window.innerHeight);
+}
+
+function render()
+{
+	renderer.render (scene, camera);
+}
+</script>
+</body>
+
+</html>
