@@ -65,7 +65,7 @@ var SCREEN_WIDTH = 1600, SCREEN_HEIGHT = 900;
 var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
 var turn = 1, move = 1;
 var clock = new THREE.Clock();
-var sun, earth, earth2, moon, moon2, light;
+var uni, sun, earth, earth2, moon, moon2, light;
 var Eangle = 0, Mangle = 0, dt = 0;
 
 init();
@@ -119,6 +119,12 @@ function init()
 	sun = new THREE.Mesh( sunGeometry, sunMaterial );
 	sun.position = light.position;
 	scene.add(sun);
+	
+	var uniGeometry = new THREE.SphereGeometry( 10000, 72, 72 );
+	var uniTexture = new THREE.ImageUtils.loadTexture( 'images/uni.jpg' );
+	var uniMaterial = new THREE.MeshBasicMaterial( { map: uniTexture, side: THREE.DoubleSide } );
+	uni = new THREE.Mesh( uniGeometry, uniMaterial );
+	scene.add(uni);
 	
 	var earthGeometry = new THREE.SphereGeometry( EARTH, 72, 72 ); 
 	var earthTexture = new THREE.ImageUtils.loadTexture( 'images/earth.jpg' );
