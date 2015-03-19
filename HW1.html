@@ -90,7 +90,7 @@ function init()
 	
 	// CAMERA
 	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
-	camera.position.set(0,150,400);
+	camera.position.set(0,0,400);
 	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
 	
 	document.body.appendChild (renderer.domElement);
@@ -169,12 +169,15 @@ function init()
 	scene2.add(moon2);
 	
 	moon.castShadow = true; moon.receiveShadow = true;
-	moon2.castShadow = true; moon2.receiveShadow = true;
+	//moon2.castShadow = true; moon2.receiveShadow = true;
 	earth.castShadow = true; earth.receiveShadow = true;
-	earth2.castShadow = true; earth2.receiveShadow = true;
+	//earth2.castShadow = true; earth2.receiveShadow = true;
+	
+	earth.rotation.x = 23.5*3.14/180;
+	earth2.rotation.x = 23.5*3.14/180;
 	
 	renderer.shadowMapEnabled = true;
-	renderer.shadowMapType = THREE.PCFShadowMap;
+	renderer.shadowMapType = THREE.PCFBasicShadowMap;
 	
 	// prepare secondary composer
 	var renderTargetParameters = 
@@ -233,7 +236,7 @@ function onWindowResize()
 
 function showMoon(Ex, Ez)
 {
-	if(move) Mangle -= dt*12*6.28;
+	if(move) Mangle -= dt*365/12;
 	
 	var r = 38.5; //3.85×10^8m
 
@@ -242,13 +245,13 @@ function showMoon(Ex, Ez)
 	
 	moon.position.set (Mx,0,Mz);
 	moon2.position.set (Mx,0,Mz);
-	if(turn) moon.rotation.y += 12*dt*6.28;
-	if(turn) moon2.rotation.y += 12*dt*6.28;
+	if(turn) moon.rotation.y += 365/12*dt;
+	if(turn) moon2.rotation.y += 365/12*dt;
 }
 
 function showEarth()
 {
-	if(move) Eangle -= dt*6.28;
+	if(move) Eangle -= dt;
 	
 	var r = 150; //1.50×10^11m
 	
@@ -257,8 +260,6 @@ function showEarth()
 	
 	earth.position.set (Ex,0,Ez);
 	earth2.position.set (Ex,0,Ez);
-	if(turn) earth.rotation.x = 23.5*3.14/180;
-	if(turn) earth2.rotation.x = 23.5*3.14/180;
 	if(turn) earth.rotation.y -= 365*dt;
 	if(turn) earth2.rotation.y -= 365*dt;
 	
@@ -268,7 +269,7 @@ function showEarth()
 
 function animate() 
 {
-	dt = clock.getDelta() / 100;
+	dt = clock.getDelta() / 50;
 	
 	// stats.update();
 	showEarth();
