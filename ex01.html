@@ -1,0 +1,302 @@
+
+<!DOCTYPE html>
+<html>
+ <head> 
+  <title>Bump maps</title> 
+  <script src="js/r69/three.min.js"></script> 
+  <script src="js/OrbitControls.js"></script>
+  <script src="js/dat.gui.min.js"></script>
+  <style>
+	body {
+		background-color: #fff;
+		color: #111;
+		margin: 0px;
+		overflow: hidden;
+		font-family: Monospace;
+		font-size: 40px;
+		position: absolute;
+	}
+	#info {
+		position: absolute;
+		top: 0px; width: 100%;
+		
+		padding: 5px;
+		text-align: center;
+		color: #008888
+	}
+	a {color: #888800}
+	strong {color:red}
+</style>
+
+</head> 
+
+<body> 
+<div id = "info">
+	door (<a href="javascript:toggle();">action</a>)
+</div>
+
+<audio id="open" style="display:none">
+	<source src="music/door_open_1.mp3" type='audio/mp3'>
+</audio>
+
+<audio id="close" style="display:none">
+	<source src="music/door_close_1.mp3" type='audio/mp3'>
+</audio>
+
+<script>
+
+var scene, camera, webGLRenderer;
+var controls;
+var orbitcontrols;
+var clock = new THREE.Clock();
+var group = new THREE.Object3D();
+var group2 = new THREE.Object3D();
+var group3 = new THREE.Object3D();
+var open, close, lock;
+var delta = -Math.PI / 3.9;
+
+init();
+render();
+
+function init() 
+{
+	open = document.getElementById ('open');
+	close = document.getElementById ('close');
+	scene = new THREE.Scene();
+
+        camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+        webGLRenderer = new THREE.WebGLRenderer();
+        webGLRenderer.setClearColor(0xEEEEEE, 1.0);
+        webGLRenderer.setSize(window.innerWidth, window.innerHeight);
+
+		orbitcontrols = new THREE.OrbitControls (camera, webGLRenderer.domElement);
+		
+		/*
+        var sphere1 = createMesh(new THREE.BoxGeometry(15, 15, 2), "wood.jpg");
+        sphere1.rotation.y = -0.75;
+        sphere1.position.x = 12;
+        scene.add(sphere1);
+		*/
+		lock = 1;
+		
+        var door = createMesh(new THREE.BoxGeometry(15, 25, 1), "wood2.jpg", "wood2_bump.jpg");
+		var golden1 = createMesh(new THREE.CylinderGeometry(0.8, 0.7, 0.2, 36), "golden.jpg");
+		var golden2 = createMesh(new THREE.CylinderGeometry(0.3, 0.3, 1, 36), "golden.jpg");
+		var golden3 = createMesh(new THREE.CylinderGeometry(0.2, 0.2, 3, 36), "golden.jpg");
+		var cylinder11 = createMesh(new THREE.CylinderGeometry(0.1, 0.1, 0.5, 36), "Fe.jpg");
+		var cylinder12 = createMesh(new THREE.CylinderGeometry(0.1, 0.1, 0.5, 36), "Fe.jpg");
+		var cylinder13 = createMesh(new THREE.CylinderGeometry(0.1, 0.1, 0.5, 36), "Fe.jpg");
+		var cylinder21 = createMesh(new THREE.CylinderGeometry(0.1, 0.1, 0.5, 36), "Fe.jpg");
+		var cylinder22 = createMesh(new THREE.CylinderGeometry(0.1, 0.1, 0.5, 36), "Fe.jpg");
+		var cylinder23 = createMesh(new THREE.CylinderGeometry(0.1, 0.1, 0.5, 36), "Fe.jpg");
+		var fe11 = createMesh(new THREE.BoxGeometry(0.6, 1.7, 0.05), "Fe_2.jpg");
+		var fe21 = createMesh(new THREE.BoxGeometry(0.6, 1.7, 0.05), "Fe_2.jpg");
+		var fe12 = createMesh(new THREE.BoxGeometry(0.6, 1.7, 0.05), "Fe_2.jpg");
+		var fe22 = createMesh(new THREE.BoxGeometry(0.6, 1.7, 0.05), "Fe_2.jpg");
+		
+        var wood1 = createMesh(new THREE.BoxGeometry(1, 25, 1), "wood2.jpg");
+        var wood2 = createMesh(new THREE.BoxGeometry(17, 1, 1), "wood2.jpg");
+        var wood3 = createMesh(new THREE.BoxGeometry(17, 1, 1), "wood2.jpg");
+        var wood4 = createMesh(new THREE.BoxGeometry(1, 25, 1), "wood2.jpg");
+		
+		golden1.position.y = 7;
+		golden1.position.x = -13.5;
+		golden1.rotation.x = -1.57;
+		
+		golden2.rotation.x = -1.57;
+		golden3.rotation.z = -1.57;
+		golden3.position.x = 1;
+		
+        cylinder11.position.y = 0;
+        cylinder12.position.y = 0.6;
+		fe21.position.z = 0.2;
+		fe21.position.y = 0.6;
+		fe21.position.x = 0.024;
+		fe11.position.z = -0.4;
+		fe11.position.y = 0.6;
+		fe11.position.x = -0.024;
+		
+		fe21.rotation.y = -0.5 * Math.PI;
+		fe11.rotation.y = -0.5 * Math.PI;
+		
+        cylinder13.position.y = 1.2;
+		
+        cylinder21.position.y = 12.8;
+        cylinder22.position.y = 13.4;
+		fe22.position.z = 0.2;
+		fe22.position.y = 13.4;
+		fe22.position.x = 0.024;
+		fe12.position.z = -0.4;
+		fe12.position.y = 13.4;
+		fe12.position.x = -0.024;
+		
+		fe22.rotation.y = -0.5 * Math.PI;
+		fe12.rotation.y = -0.5 * Math.PI;
+        cylinder23.position.y = 14;
+		
+		wood1.position.x = 0.5;
+        wood1.position.y = 6;
+		wood2.position.x = -7.5;
+        wood2.position.y = 19;
+		wood3.position.x = -7.5;
+        wood3.position.y = -7;
+		wood4.position.x = -15.5;
+        wood4.position.y = 6;
+		
+		//fe11.rotation.z = -0.5 * Math.PI;
+		
+        door.position.x = -7.5;
+        door.position.y = 6;
+        door.position.z = -0.6;
+		group.add(door);
+        group.add(cylinder12);
+        group.add(cylinder22);
+		group.add(fe11);
+		group.add(fe12);
+		group.add(golden1);
+		group3.add(golden2);
+		group3.add(golden3);
+		
+		group3.position.y = 7;
+		group3.position.x = -13.5;
+		group3.position.z = 0.5;
+		
+		group.add(group3);
+		
+        group2.add(wood1);
+        group2.add(wood2);
+        group2.add(wood3);
+        group2.add(wood4);
+		group2.add(fe21);
+		group2.add(fe22);
+		
+		group2.position.z = -0.6;
+		
+        scene.add(cylinder11);
+        scene.add(cylinder13);
+        scene.add(cylinder21);
+        scene.add(cylinder23);
+        scene.add(group);
+        scene.add(group2);
+
+        //console.log(sphere2.geometry.faceVertexUvs);
+
+        var floorTex = THREE.ImageUtils.loadTexture("images/floor-wood.jpg")
+        var plane = new THREE.Mesh(new THREE.BoxGeometry(200, 100, 0.1, 30), new THREE.MeshPhongMaterial({color: 0xffffff, map: floorTex}));
+        plane.position.y = -7.5;
+        plane.rotation.x = -0.5 * Math.PI;
+        scene.add(plane);
+
+        // position and point the camera to the center of the scene
+        camera.position.x = 00;
+        camera.position.y = 12;
+        camera.position.z = 28;
+        camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+        var ambiLight = new THREE.AmbientLight(0xffffff)
+        scene.add(ambiLight);
+
+        var light = new THREE.SpotLight();
+        light.position.set(0, 30, 30);
+        light.intensity = 1.2;
+        scene.add(light);
+
+		document.body.appendChild (webGLRenderer.domElement);
+
+        // setup the control gui
+        controls = new function () {
+            this.bumpScale = 0.2;
+
+            this.updateBump = function (e) {
+                console.log(door.material.bumpScale);
+                door.material.bumpScale = e;
+            }
+        };
+
+
+        var gui = new dat.GUI();
+        gui.add(controls, "bumpScale", 0, 1).onChange(controls.updateBump);
+
+		window.addEventListener ('resize', onWindowResize, false);	
+}
+
+function onWindowResize()
+{
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	webGLRenderer.setSize (window.innerWidth, window.innerHeight);
+}
+
+function createMesh(geom, imageFile, bump) 
+{
+	geom.computeVertexNormals();
+
+	var mat = new THREE.MeshPhongMaterial();
+	var texture = THREE.ImageUtils.loadTexture("images/" + imageFile)
+	mat.map = texture;
+
+	if (bump) {
+		var bump = THREE.ImageUtils.loadTexture("images/" + bump)
+		mat.bumpMap = bump;
+		//mat.bumpScale = 0.2;
+	}
+
+	var mesh = new THREE.Mesh(geom, mat);
+
+	return mesh;
+}
+
+function toggle()
+{
+	if(group.rotation.y != 0 && group.rotation.y != 1.57)
+		return;
+	
+	delta *= -1;
+	
+	if (delta > 0) {
+		lock = 0;
+		open.play();
+	}
+	else {
+		close.play();
+	}
+}
+
+function rotateDoor()
+{
+	if (lock == 0 && group3.rotation.z > -Math.PI/6) {
+		group3.rotation.z -= Math.PI/30;
+		return;
+	}
+	
+	lock = 1;
+	
+	if(group3.rotation.z < 0)
+		group3.rotation.z += Math.PI/30;
+	else
+		group3.rotation.z = 0;
+	
+	group.rotation.y = group.rotation.y + delta*clock.getDelta();
+	
+	if(group.rotation.y <= 0) {
+		group.rotation.y = 0;
+		//delta = 0 - delta;
+	}
+	else if(group.rotation.y >= 1.57) {
+		group.rotation.y = 1.57;
+		//delta = 0 - delta;
+	}
+}
+
+function render() {
+	orbitcontrols.update();
+	rotateDoor();
+	requestAnimationFrame(render);
+	webGLRenderer.render(scene, camera);
+}
+
+
+</script>  
+ </body>
+</html>
