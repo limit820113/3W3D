@@ -32,8 +32,6 @@
 <script src="js/OrbitControls.js"></script>
 <script src="js/KeyboardState.js"></script>
 <script src="js/dat.gui.min.js"></script>
-<script src="js/loaders/MTLLoader.js"></script>
-<script src="js/loaders/OBJMTLLoader.js"></script>
 <script type="x-shader/x-fragment" id="fragmentShaderDepth">
     uniform sampler2D texture;
     varying vec2 vUV;
@@ -189,11 +187,9 @@ function animate() {
 	tire.rotation.y = angle2;
 	vTire.rotation.z += dt*speed;
 	
-    //tire.position.set(50 * Math.cos(angle), 20, 50 * Math.sin(angle));
     tire.position.x -= dt*speed * Math.cos(angle2)*31.5;
 	tire.position.z += dt*speed * Math.sin(angle2)*31.5;
 	tire.position.y = 15.5;
-    //spotLight.position.set(tire.position.x, 100, tire.position.z+200);
 
     requestAnimationFrame(animate);
     render();
@@ -214,7 +210,7 @@ function getTire() {
 	tireSide2.rotation.x = Math.PI;
 	
     var geometry = new THREE.TorusGeometry (23.5, 8, 72, 72);
-    var tireCenter = getTread(geometry, 'tire2.jpg', 'tire2_bump.jpg');
+    var tireCenter = getTread(geometry, 'tire.jpg', 'tire_bump.jpg');
 	tireCenter.position = tireSide2.position;
 	tireCenter.position.set(0, 0, 0);
 	tireCenter.castShadow = true;
@@ -247,7 +243,7 @@ function getTread(geom, imageFile, bump)
 
 function getTireSide() {
 	
-	sidemap = THREE.ImageUtils.loadTexture('images/tireside.png');
+	sidemap = THREE.ImageUtils.loadTexture('images/tireSide.png');
 
     var geometry = new THREE.BoxGeometry (50, 50, 0.01, 72);
     var material = new THREE.MeshBasicMaterial({
@@ -258,7 +254,6 @@ function getTireSide() {
 
     var tireSide = new THREE.Mesh(geometry, material);
     tireSide.position.set(0, 0, 4.25);
-    //mesh.rotation.x = Math.PI / 2;
 
     ///////////////////////////////////////////////////////////////////
     var uniforms = {
@@ -279,10 +274,6 @@ function getTireSide() {
 	
 	return tireSide;
 }
-
-
-//window.focus();
-
 
 </script>
 
