@@ -204,10 +204,9 @@ function getTire() {
 	
     var tireFull = new THREE.Object3D();
 	
-	var tireSide = getTireSide();
-	var tireSide2 = getTireSide();
+	var tireSide = getTireSide(THREE.FrontSide);
+	var tireSide2 = getTireSide(THREE.BackSide);
 	tireSide2.position.z *= -1;
-	tireSide2.rotation.x = Math.PI;
 	
     var geometry = new THREE.TorusGeometry (23.5, 8, 72, 72);
     var tireCenter = getTread(geometry, 'tire.jpg', 'tire_bump.jpg');
@@ -226,7 +225,7 @@ function getTread(geom, imageFile, bump)
 {
 	geom.computeVertexNormals();
 
-	var mat = new THREE.MeshPhongMaterial();
+	var mat = new THREE.MeshPhongMaterial({side: THREE.DoubleSide});
 	var texture = THREE.ImageUtils.loadTexture("images/" + imageFile);
 	mat.map = texture;
 
@@ -241,7 +240,7 @@ function getTread(geom, imageFile, bump)
 	return mesh;
 }
 
-function getTireSide() {
+function getTireSide(tSide) {
 	
 	sidemap = THREE.ImageUtils.loadTexture('images/tireSide.png');
 
@@ -249,7 +248,7 @@ function getTireSide() {
     var material = new THREE.MeshBasicMaterial({
         map: sidemap,
         transparent: true, // for cut-out texture
-        side: THREE.DoubleSide
+        side: tSide
     });
 
     var tireSide = new THREE.Mesh(geometry, material);
