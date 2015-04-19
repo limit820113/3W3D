@@ -102,11 +102,13 @@ function init() {
 	base = getBase();
 	joyStick = getSkeleton();//25.5
 	joyStick.position.y = 10;
+	joyStick.add(getBoxer());
 	base.add(joyStick);
 	segway.add(base);
 
     ////////////////////////////////////////////////////////
     vMove.add(segway);
+    scene.add();
     scene.add(vMove);
 
     spotLight = new THREE.SpotLight(0xffffff, 1.3);
@@ -212,7 +214,6 @@ function animate() {
 		speedR -= 0.3;
 		trans();
 	}
-	
 	
 	angle2 += angle*dt*speed;
 	///tire.rotation.x = angle;
@@ -353,6 +354,133 @@ function getBase() {
     tBase.castShadow = true;
 	
 	return tBase;
+}
+
+function getBoxer() {
+	var geometryH = new THREE.BoxGeometry (50, 50, 75, 72);
+    var materialH = new THREE.MeshBasicMaterial({color: 0x7B7150});
+
+    var boxH = new THREE.Mesh(geometryH, materialH);
+	//base.rotation.x = 1.57;
+    boxH.position.set(-15, 100, 0);
+    boxH.castShadow = true;
+	
+	var geometryB = new THREE.BoxGeometry (30, 50, 40, 72);
+    var materialB = new THREE.MeshBasicMaterial({color: 0x7B7150});
+
+    var boxB = new THREE.Mesh(geometryB, materialB);
+	//base.rotation.x = 1.57;
+    boxB.position.set(-15, 50, 0);
+    boxB.castShadow = true;
+	
+	//////////////
+	
+	var geometryLH = new THREE.BoxGeometry (10, 30, 10, 72);
+    var materialLH = new THREE.MeshBasicMaterial({color: 0x988560});
+
+    var boxLH = new THREE.Mesh(geometryLH, materialLH);
+	boxLH.rotation.z = 1;
+    boxLH.position.set(0, 70, -25);
+    boxLH.castShadow = true;
+	
+	var geometryRH = new THREE.BoxGeometry (10, 30, 10, 72);
+    var materialRH = new THREE.MeshBasicMaterial({color: 0x988560});
+
+    var boxRH = new THREE.Mesh(geometryRH, materialRH);
+	boxRH.rotation.z = 1;
+    boxRH.position.set(0, 70, 25);
+    boxRH.castShadow = true;
+	
+	var geometryRL = new THREE.BoxGeometry (10, 50, 10, 72);
+    var materialRL = new THREE.MeshBasicMaterial({color: 0x988560});
+
+    var boxRL = new THREE.Mesh(geometryRL, materialRL);
+    boxRL.position.set(-15, 15, 10);
+    boxRL.castShadow = true;
+	
+	var geometryLL = new THREE.BoxGeometry (10, 50, 10, 72);
+    var materialLL = new THREE.MeshBasicMaterial({color: 0x988560});
+
+    var boxLL = new THREE.Mesh(geometryLL, materialLL);
+    boxLL.position.set(-15, 15, -10);
+    boxLL.castShadow = true;
+	/////////////
+	var geometryb1 = new THREE.BoxGeometry (15, 5, 35, 72);
+    var materialb1 = new THREE.MeshBasicMaterial({color: 0x7B7150});
+
+    var boxb1 = new THREE.Mesh(geometryb1, materialb1);
+	boxb1.rotation.z = -1.2;
+    boxb1.position.set(0, 20, 0);
+    boxb1.castShadow = true;
+	
+	var geometryb2 = new THREE.BoxGeometry (15, 5, 35, 72);
+    var materialb2 = new THREE.MeshBasicMaterial({color: 0x7B7150});
+
+    var boxb2 = new THREE.Mesh(geometryb2, materialb2);
+	boxb2.rotation.z = 1.2;
+    boxb2.position.set(-30, 20, 0);
+    boxb2.castShadow = true;
+	
+	var geometryb3 = new THREE.BoxGeometry (15, 5, 20, 72);
+    var materialb3 = new THREE.MeshBasicMaterial({color: 0x7B7150});
+
+    var boxb3 = new THREE.Mesh(geometryb3, materialb3);
+	boxb3.rotation.y = 1.57;
+	boxb3.rotation.z = 1.2;
+    boxb3.position.set(-15, 20, 20);
+    boxb3.castShadow = true;
+	
+	var geometryb4 = new THREE.BoxGeometry (15, 5, 20, 72);
+    var materialb4 = new THREE.MeshBasicMaterial({color: 0x7B7150});
+
+    var boxb4 = new THREE.Mesh(geometryb4, materialb4);
+	boxb4.rotation.y = 1.57;
+	boxb4.rotation.z = -1.2;
+    boxb4.position.set(-15, 20, -20);
+    boxb4.castShadow = true;
+	
+	//////////////////////
+	var geometryLE = new THREE.CylinderGeometry(5, 5, 2, 72);
+    var materialLE = new THREE.MeshBasicMaterial({color: 0x1A1B16}); 
+
+    var boxLE = new THREE.Mesh(geometryLE, materialLE);
+	boxLE.rotation.z = 1.57;
+    boxLE.position.set(10, 107, -13);
+    boxLE.castShadow = true;
+	
+	var geometryRE = new THREE.CylinderGeometry(5, 5, 2, 72);
+    var materialRE = new THREE.MeshBasicMaterial({color: 0x1A1B16}); 
+
+    var boxRE = new THREE.Mesh(geometryRE, materialRE);
+	boxRE.rotation.z = 1.57;
+    boxRE.position.set(10, 107, 13);
+    boxRE.castShadow = true;
+	
+	var geometryM = new THREE.BoxGeometry(10, 15, 2, 72);
+    var materialM = new THREE.MeshBasicMaterial({color: 0x1A1B16}); 
+
+    var boxM = new THREE.Mesh(geometryM, materialM);
+	boxM.rotation.y = 1.57;
+	boxM.rotation.z = 1.57;
+    boxM.position.set(10, 90, 0);
+    boxM.castShadow = true;
+	
+	var boxer = new THREE.Object3D();
+	boxer.add(boxH);
+	boxer.add(boxB);
+	boxer.add(boxRH);
+	boxer.add(boxRL);
+	boxer.add(boxLH);
+	boxer.add(boxLL);
+	boxer.add(boxb1);
+	boxer.add(boxb2);
+	boxer.add(boxb3);
+	boxer.add(boxb4);
+	boxer.add(boxLE);
+	boxer.add(boxRE);
+	boxer.add(boxM);
+	
+	return boxer;
 }
 
 function getSkeleton() {
