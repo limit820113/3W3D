@@ -25,7 +25,7 @@
 <body>
 
 
-<div id="info">▲<br/>◄ ▼ ►<br/>
+<div id="info">qe<br/>zc<br/><a href="javascript:toggle();">camera</a>
 </div>
 
 <script src="js/r69/three.min.js"></script>
@@ -76,6 +76,7 @@ var camera, scene, renderer, segway, vTire, vTire2, vMove, spotLight, controls;
 var keyboard = new KeyboardState();
 var speed = 0, angle = 0, angle2 = 0;
 var speedL = 0, speedR = 0;
+var joyStick, base;
 
 init();
 animate();
@@ -98,8 +99,11 @@ function init() {
 	vMove = new THREE.Object3D();
 	segway.add(vTire);
 	segway.add(vTire2);
-	segway.add(getBase());
-	segway.add(getSkeleton());
+	base = getBase();
+	joyStick = getSkeleton();//25.5
+	joyStick.position.y = 10;
+	base.add(joyStick);
+	segway.add(base);
 
     ////////////////////////////////////////////////////////
     vMove.add(segway);
@@ -153,19 +157,37 @@ function init() {
     controls = new THREE.OrbitControls(camera, renderer.domElement);
 
     document.body.appendChild(renderer.domElement);
+	window.addEventListener ('resize', onWindowResize, false);
+}
+
+function onWindowResize()
+{
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	renderer.setSize (window.innerWidth, window.innerHeight);
+}
+
+function fabs(num) {
+	return (num > 0) ? num : -1*num;
 }
 
 function trans() {
-	if (speedR == 0) {
-		vMove.position.z += Math.cos(segway.rotation.y)*(40-segway.position.z)
-		vMove.position.x -= Math.sin(segway.rotation.y)*(40-segway.position.z);
-		segway.position.z = 40;
+	var transZ;
+	
+	if (speedL*speedR < 0) {
+		transZ = fabs(speedL)/(fabs(speedR)+fabs(speedL))*80-40;
 	}
-	else if (speedL == 0) {
-		vMove.position.z -= Math.cos(segway.rotation.y)*(40+segway.position.z)
-		vMove.position.x += Math.sin(segway.rotation.y)*(40+segway.position.z);
-		segway.position.z = -40;
+	else if (speedL+speedR == 0 || fabs((speedL-speedR)/(speedL+speedR)) < 0.01) {
+		transZ = 0;
 	}
+	else {
+		transZ = fabs(speedR)/(fabs(speedR)-fabs(speedL))*80-40;
+	}
+	
+	vMove.position.z -= Math.cos(vMove.rotation.y)*(transZ-segway.position.z);
+	vMove.position.x -= Math.sin(vMove.rotation.y)*(transZ-segway.position.z);
+	
+	segway.position.z = transZ;
 }
 
 function animate() {
@@ -178,56 +200,65 @@ function animate() {
 		speedL += 0.3;
 		trans();
 	}
-	if ( keyboard.down("E")) {  // must use upper case!!
+	if ( keyboard.down("E")) {
 		speedR += 0.3;
 		trans();
 	}
-	if ( keyboard.down("Z")) {  // must use upper case!!
+	if ( keyboard.down("Z")) {
 		speedL -= 0.3;
 		trans();
 	}
-	if ( keyboard.down("C")) {  // must use upper case!!
+	if ( keyboard.down("C")) {
 		speedR -= 0.3;
 		trans();
 	}
-	if ( keyboard.down("A"))
-		alert(segway.position.x);
 	
 	
 	angle2 += angle*dt*speed;
 	///tire.rotation.x = angle;
-	segway.rotation.y = angle2;
-	vTire.rotation.z += dt*speedR;
-	vTire2.rotation.z += dt*speedL;
+	vTire.rotation.z -= dt*speedL;
+	vTire2.rotation.z -= dt*speedR;
 	//vTire2.rotation.z += dt*speed;
 	
-	if (speedL == speedR) {
-		vMove.position.x -= dt*speedR * Math.cos(angle2)*31.5;
-		vMove.position.z += dt*speedR * Math.sin(angle2)*31.5;
+	if (speedL != 0 && speedR != 0 && fabs((speedL-speedR)/(fabs(speedL)+fabs(speedR))) < 0.01) {
+		vMove.position.x += dt*(speedL+speedR)/2 * Math.cos(vMove.rotation.y)*31.5;
+		vMove.position.z -= dt*(speedL+speedR)/2 * Math.sin(vMove.rotation.y)*31.5;
 	}
-	else if (true){
-		vMove.rotation.y += (Math.abs(speedR)+Math.abs(speedL))/2*dt*Math.PI/40*31.5;
-		//  dt*speedR*31.5;
+	else if (fabs(speedL) > fabs(speedR)){
+		var tmp = 40-segway.position.z;
+		vMove.rotation.y -= dt*speedL*31.5/tmp;
 	}
 	else {
-		vMove2 = vMove;
-		vMove = new THREE.Object3D();
-		vMove.add(segway)
-		vMove.position.x = vMove2.position.x;
-		vMove.position.z = vMove2.position.z;
-		scene.add(vMove);
-		vMove.position.x -= dt*speedR * Math.cos(angle2)*31.5;
-		vMove.position.z += dt*speedR * Math.sin(angle2)*31.5;
-		scene.remove(vMove2);
+		var tmp = -40-segway.position.z;
+		vMove.rotation.y -= dt*speedR*31.5/tmp;
 	}
-	/*
-    segway.position.x -= dt*speed * Math.cos(angle2)*31.5;
-	segway.position.z += dt*speed * Math.sin(angle2)*31.5;
 	
-*/
     segway.position.y = 15.5;
+	if(fabs((speedL+speedR)/300) < 0.1) {
+		base.rotation.z = -(speedL+speedR)/100;
+		joyStick.rotation.x = (speedR-speedL)/100;
+	}
 	requestAnimationFrame(animate);
     render();
+}
+var swh = 0;
+function toggle() {
+	if (swh) {
+		segway.remove(camera);
+		camera.position.y = 200;
+		camera.position.x = 500;
+		camera.position.z = 0;
+		camera.lookAt(new THREE.Vector3(0, 0, 0));
+		scene.add(camera);
+	}
+	else {
+		scene.remove(camera);
+		camera.position.set(joyStick.position.x+300, 100, joyStick.position.z);
+		camera.lookAt(new THREE.Vector3(joyStick.position.x, 100, joyStick.position.z));
+		segway.add(camera);
+	}
+	
+	swh = !swh;
 }
 
 function render() {
@@ -312,16 +343,16 @@ function getTireSide(tSide) {
 }
 
 function getBase() {
-	var geometry = new THREE.BoxGeometry (50, 75, 5, 72);
+	var geometry = new THREE.BoxGeometry (50, 5, 75, 72);
     var material = new THREE.MeshBasicMaterial({color: 0x221100});
 
-    var base = new THREE.Mesh(geometry, material);
-	base.rotation.x = 1.57;
-    base.position.set(0, 15.5, 4.25);
+    var tBase = new THREE.Mesh(geometry, material);
+	//base.rotation.x = 1.57;
+    tBase.position.set(0, 15.5, 0);
 	
-    base.castShadow = true;
+    tBase.castShadow = true;
 	
-	return base;
+	return tBase;
 }
 
 function getSkeleton() {
@@ -330,7 +361,7 @@ function getSkeleton() {
 
     var sk1 = new THREE.Mesh(geometry1, material1);
 	//base.rotation.z = 1.57;
-    sk1.position.set(-18, 55.5, 0);
+    sk1.position.set(18, 30, 0);
     sk1.castShadow = true;
 	///////////////////////////////////////////////////
 	
@@ -338,7 +369,7 @@ function getSkeleton() {
     var material2 = new THREE.MeshBasicMaterial({color: 0x880000});
 
     var sk2 = new THREE.Mesh(geometry2, material2);
-    sk2.position.set(-18, 25.5, 0);
+    sk2.position.set(18, 0, 0);//
 	sk2.rotation.z = 1.57;
     sk2.castShadow = true;
 	
@@ -347,7 +378,7 @@ function getSkeleton() {
     var material3 = new THREE.MeshBasicMaterial({color: 0x880000});
 
     var sk3 = new THREE.Mesh(geometry3, material3);
-    sk3.position.set(-18, 85, 0);
+    sk3.position.set(18, 59.5, 0);
 	//sk3.rotation.x = 1.57;
     sk3.castShadow = true;
 	
