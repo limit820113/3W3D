@@ -1,0 +1,367 @@
+
+<head>
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+<style>
+	body {
+		background-color: #fff;
+		color: #111;
+		margin: 0px;
+		overflow: hidden;
+		font-family: Monospace;
+		font-size: 40px;
+		position: absolute;
+	}
+	#info {
+		position: absolute;
+		width: 100%;
+		text-align: center;
+		color: #ffff00
+	}
+	a {color: #888800}
+	strong {color:red}
+</style>
+</head>
+
+<body>
+
+
+<div id="info">▲<br/>◄ ▼ ►<br/>
+</div>
+
+<script src="js/r69/three.min.js"></script>
+<script src="js/OrbitControls.js"></script>
+<script src="js/KeyboardState.js"></script>
+<script src="js/dat.gui.min.js"></script>
+<script type="x-shader/x-fragment" id="fragmentShaderDepth">
+    uniform sampler2D texture;
+    varying vec2 vUV;
+
+    vec4 pack_depth(const in float depth) {
+
+        const vec4 bit_shift = vec4(256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0, 1.0);
+        const vec4 bit_mask = vec4(0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0);
+        vec4 res = fract(depth * bit_shift);
+        res -= res.xxyz * bit_mask;
+        return res;
+
+    }
+
+    void main() {
+
+        vec4 pixel = texture2D(texture, vUV);
+
+        if (pixel.a < 0.5) discard;
+
+        gl_FragData[0] = pack_depth(gl_FragCoord.z);
+
+    }
+</script>
+<script type="x-shader/x-vertex" id="vertexShaderDepth">
+    varying vec2 vUV;
+
+    void main() {
+
+        vUV = 1.0 * uv;
+
+        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+
+        gl_Position = projectionMatrix * mvPosition;
+
+    }
+</script>
+<script>
+
+var clock = new THREE.Clock();
+var camera, scene, renderer, segway, vTire, vTire2, vMove, spotLight, controls;
+var keyboard = new KeyboardState();
+var speed = 0, angle = 0, angle2 = 0;
+var speedL = 0, speedR = 0;
+
+init();
+animate();
+
+function init() {
+    scene = new THREE.Scene();
+
+    camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 10000);
+    camera.position.y = 200;
+    camera.position.x = 500;
+    scene.add(camera);
+    //////////////////////////////////
+
+    THREE.ImageUtils.crossOrigin = '';
+    vTire = getTire();
+	vTire2 = getTire();
+	vTire.position.z = -40;
+	vTire2.position.z = 40;
+	segway = new THREE.Object3D();
+	vMove = new THREE.Object3D();
+	segway.add(vTire);
+	segway.add(vTire2);
+	segway.add(getBase());
+	segway.add(getSkeleton());
+
+    ////////////////////////////////////////////////////////
+    vMove.add(segway);
+    scene.add(vMove);
+
+    spotLight = new THREE.SpotLight(0xffffff, 1.3);
+    spotLight.position.set(0, 300, 0);
+    spotLight.angle = Math.PI / 3;
+
+    spotLight.castShadow = true;
+
+    spotLight.shadowMapWidth = 1024;
+    spotLight.shadowMapHeight = 1024;
+
+    spotLight.shadowCameraNear = 5;
+    spotLight.shadowCameraFar = 4000;
+    spotLight.shadowCameraFov = spotLight.angle / Math.PI * 180;
+
+    spotLight.exponent = 20;
+    spotLight.target = segway;
+    scene.add(spotLight);
+
+    var spotball = new THREE.Mesh(
+		new THREE.SphereGeometry(36, 180, 180),
+		new THREE.MeshBasicMaterial({color: 0xfffff0})
+	);
+	
+	
+    spotball.position.copy(spotLight.position);
+    scene.add(spotball);
+
+    var ground = new THREE.Mesh(
+		new THREE.PlaneGeometry(2000, 2000, 130, 130),
+		new THREE.MeshLambertMaterial({
+			color: 0xffffff,
+			//wireframe: true
+		})
+	);
+    ground.rotation.x = -Math.PI / 2;
+    scene.add(ground);
+
+    ground.receiveShadow = true;
+    segway.castShadow = true;
+
+    renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x888888);
+    renderer.shadowMapEnabled = true;
+    renderer.shadowMapType = THREE.PCFShadowMap;
+
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+    document.body.appendChild(renderer.domElement);
+}
+
+function trans() {
+	if (speedR == 0) {
+		vMove.position.z += Math.cos(segway.rotation.y)*(40-segway.position.z)
+		vMove.position.x -= Math.sin(segway.rotation.y)*(40-segway.position.z);
+		segway.position.z = 40;
+	}
+	else if (speedL == 0) {
+		vMove.position.z -= Math.cos(segway.rotation.y)*(40+segway.position.z)
+		vMove.position.x += Math.sin(segway.rotation.y)*(40+segway.position.z);
+		segway.position.z = -40;
+	}
+}
+
+function animate() {
+	var dt = clock.getDelta();
+	
+    controls.update();
+    keyboard.update();
+	
+	if ( keyboard.down("Q")) {
+		speedL += 0.3;
+		trans();
+	}
+	if ( keyboard.down("E")) {  // must use upper case!!
+		speedR += 0.3;
+		trans();
+	}
+	if ( keyboard.down("Z")) {  // must use upper case!!
+		speedL -= 0.3;
+		trans();
+	}
+	if ( keyboard.down("C")) {  // must use upper case!!
+		speedR -= 0.3;
+		trans();
+	}
+	if ( keyboard.down("A"))
+		alert(segway.position.x);
+	
+	
+	angle2 += angle*dt*speed;
+	///tire.rotation.x = angle;
+	segway.rotation.y = angle2;
+	vTire.rotation.z += dt*speedR;
+	vTire2.rotation.z += dt*speedL;
+	//vTire2.rotation.z += dt*speed;
+	
+	if (speedL == speedR) {
+		vMove.position.x -= dt*speedR * Math.cos(angle2)*31.5;
+		vMove.position.z += dt*speedR * Math.sin(angle2)*31.5;
+	}
+	else if (true){
+		vMove.rotation.y += (Math.abs(speedR)+Math.abs(speedL))/2*dt*Math.PI/40*31.5;
+		//  dt*speedR*31.5;
+	}
+	else {
+		vMove2 = vMove;
+		vMove = new THREE.Object3D();
+		vMove.add(segway)
+		vMove.position.x = vMove2.position.x;
+		vMove.position.z = vMove2.position.z;
+		scene.add(vMove);
+		vMove.position.x -= dt*speedR * Math.cos(angle2)*31.5;
+		vMove.position.z += dt*speedR * Math.sin(angle2)*31.5;
+		scene.remove(vMove2);
+	}
+	/*
+    segway.position.x -= dt*speed * Math.cos(angle2)*31.5;
+	segway.position.z += dt*speed * Math.sin(angle2)*31.5;
+	
+*/
+    segway.position.y = 15.5;
+	requestAnimationFrame(animate);
+    render();
+}
+
+function render() {
+    renderer.render(scene, camera);
+}
+
+function getTire() {
+	THREE.ImageUtils.crossOrigin = '';
+	
+    var tireFull = new THREE.Object3D();
+	
+	var tireSide = getTireSide(THREE.FrontSide);
+	var tireSide2 = getTireSide(THREE.BackSide);
+	tireSide2.position.z *= -1;
+	
+    var geometry = new THREE.TorusGeometry (23.5, 8, 72, 72);
+    var tireCenter = getTread(geometry, 'tire.jpg', 'tire_bump.jpg');
+	tireCenter.position = tireSide2.position;
+	tireCenter.position.set(0, 0, 0);
+	tireCenter.castShadow = true;
+	
+	tireFull.add(tireCenter);
+	tireFull.add(tireSide);
+	tireFull.add(tireSide2);
+	
+	tireFull.position.y = 15.5;
+	
+	return tireFull;
+}
+
+function getTread(geom, imageFile, bump) 
+{
+	geom.computeVertexNormals();
+
+	var mat = new THREE.MeshPhongMaterial({side: THREE.DoubleSide});
+	var texture = THREE.ImageUtils.loadTexture("images/" + imageFile);
+	mat.map = texture;
+
+	if (bump) {
+		var bump = THREE.ImageUtils.loadTexture("images/" + bump);
+		mat.bumpMap = bump;
+		mat.bumpScale = 0.7;
+	}
+
+	var mesh = new THREE.Mesh(geom, mat);
+
+	return mesh;
+}
+
+function getTireSide(tSide) {
+	
+	sidemap = THREE.ImageUtils.loadTexture('images/tireSide.png');
+
+    var geometry = new THREE.BoxGeometry (50, 50, 0.01, 72);
+    var material = new THREE.MeshBasicMaterial({
+        map: sidemap,
+        transparent: true, // for cut-out texture
+        side: tSide
+    });
+
+    var tireSide = new THREE.Mesh(geometry, material);
+    tireSide.position.set(0, 0, 4.25);
+
+    ///////////////////////////////////////////////////////////////////
+    var uniforms = {
+        texture: {
+            type: "t",
+            value: sidemap
+        }
+    };
+    var vertexShader = document.getElementById('vertexShaderDepth').textContent;
+    var fragmentShader = document.getElementById('fragmentShaderDepth').textContent;
+    tireSide.customDepthMaterial = new THREE.ShaderMaterial({
+        uniforms: uniforms,
+        vertexShader: vertexShader,
+        fragmentShader: fragmentShader
+    });
+	
+    tireSide.castShadow = true;
+	
+	return tireSide;
+}
+
+function getBase() {
+	var geometry = new THREE.BoxGeometry (50, 75, 5, 72);
+    var material = new THREE.MeshBasicMaterial({color: 0x221100});
+
+    var base = new THREE.Mesh(geometry, material);
+	base.rotation.x = 1.57;
+    base.position.set(0, 15.5, 4.25);
+	
+    base.castShadow = true;
+	
+	return base;
+}
+
+function getSkeleton() {
+	var geometry1 = new THREE.CylinderGeometry(4.5, 4.5, 80, 72);
+    var material1 = new THREE.MeshBasicMaterial({color: 0xFFFF00});
+
+    var sk1 = new THREE.Mesh(geometry1, material1);
+	//base.rotation.z = 1.57;
+    sk1.position.set(-18, 55.5, 0);
+    sk1.castShadow = true;
+	///////////////////////////////////////////////////
+	
+	var geometry2 = new THREE.CylinderGeometry(10, 10, 10, 72);
+    var material2 = new THREE.MeshBasicMaterial({color: 0x880000});
+
+    var sk2 = new THREE.Mesh(geometry2, material2);
+    sk2.position.set(-18, 25.5, 0);
+	sk2.rotation.z = 1.57;
+    sk2.castShadow = true;
+	
+	
+	var geometry3 = new THREE.BoxGeometry(10, 10, 50, 72);
+    var material3 = new THREE.MeshBasicMaterial({color: 0x880000});
+
+    var sk3 = new THREE.Mesh(geometry3, material3);
+    sk3.position.set(-18, 85, 0);
+	//sk3.rotation.x = 1.57;
+    sk3.castShadow = true;
+	
+	
+	
+	
+	var skeleton = new THREE.Object3D();
+	skeleton.add(sk1);
+	skeleton.add(sk2);
+	skeleton.add(sk3);
+	
+	return skeleton;
+}
+
+</script>
+
+</body>

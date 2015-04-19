@@ -84,12 +84,13 @@ function init()
 	camera.position.z = 400;
 	camera.lookAt (new THREE.Vector3(0,0,0));
 	
-	name = 'lamp';
+	name = 'mario_obj';
 
 	var loader = new THREE.OBJMTLLoader();
 	loader.load ('models/'+name+'.obj', 'models/'+name+'.mtl', 
 	   function (object) {
 		 toycar = object;
+		 //toycar.scale(2, 2);
 		 scene.add( toycar );
 	   } );
 	
@@ -107,7 +108,7 @@ function init()
 
 	var pointLight = new THREE.PointLight (0xffffff);
 	pointLight.position.set (0,300,200);
-	//scene.add (pointLight);
+	scene.add (pointLight);
 
 	var ambientLight = new THREE.AmbientLight (0xffffff);
 	scene.add(ambientLight);
@@ -126,6 +127,7 @@ function animate()
 		toycar.scale.set (0.2,0.2,0.2);
 		var x = 50*Math.cos(angle1);
 		var z = 50*Math.sin(angle1);
+		toycar.scale.set (0.5,1,0.5);
 		toycar.position.set (x,0,z);
 		toycar.rotation.y = -(angle1+Math.PI);
 	}
