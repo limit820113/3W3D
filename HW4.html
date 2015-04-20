@@ -177,7 +177,7 @@ function trans() {
 	var transZ;
 	
 	if (speedL*speedR < 0) {
-		transZ = fabs(speedL)/(fabs(speedR)+fabs(speedL))*80-40;
+		transZ = fabs(speedR)/(fabs(speedR)+fabs(speedL))*80-40;
 	}
 	else if (speedL+speedR == 0 || fabs((speedL-speedR)/(speedL+speedR)) < 0.01) {
 		transZ = 0;
@@ -226,12 +226,12 @@ function animate() {
 		vMove.position.z -= dt*(speedL+speedR)/2 * Math.sin(vMove.rotation.y)*31.5;
 	}
 	else if (fabs(speedL) > fabs(speedR)){
-		var tmp = 40-segway.position.z;
-		vMove.rotation.y -= dt*speedL*31.5/tmp;
+		var tmp = -40+segway.position.z;
+		vMove.rotation.y += dt*speedL*31.5/tmp;
 	}
 	else {
-		var tmp = -40-segway.position.z;
-		vMove.rotation.y -= dt*speedR*31.5/tmp;
+		var tmp = 40+segway.position.z;
+		vMove.rotation.y += dt*speedR*31.5/tmp;
 	}
 	
     segway.position.y = 15.5;
