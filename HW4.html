@@ -226,12 +226,12 @@ function animate() {
 		vMove.position.z -= dt*(speedL+speedR)/2 * Math.sin(vMove.rotation.y)*31.5;
 	}
 	else if (fabs(speedL) > fabs(speedR)){
-		var tmp = -40+segway.position.z;
-		vMove.rotation.y += dt*speedL*31.5/tmp;
+		var tmp = 40-segway.position.z;
+		vMove.rotation.y -= dt*speedL*31.5/tmp;
 	}
 	else {
-		var tmp = 40+segway.position.z;
-		vMove.rotation.y += dt*speedR*31.5/tmp;
+		var tmp = -40-segway.position.z;
+		vMove.rotation.y -= dt*speedR*31.5/tmp;
 	}
 	
     segway.position.y = 15.5;
@@ -456,13 +456,18 @@ function getBoxer() {
     boxRE.position.set(10, 107, 13);
     boxRE.castShadow = true;
 	
-	var geometryM = new THREE.BoxGeometry(10, 15, 2, 72);
+	var geometryM = new THREE.Geometry();
+	geometryM.vertices.push(new THREE.Vector3(0,0,0));
+	geometryM.vertices.push(new THREE.Vector3(13,0,0));
+	geometryM.vertices.push(new THREE.Vector3(13,13,0));
+	geometryM.faces.push(new THREE.Face3(0,1,2));
+	geometryM.computeFaceNormals();
     var materialM = new THREE.MeshBasicMaterial({color: 0x1A1B16}); 
 
     var boxM = new THREE.Mesh(geometryM, materialM);
 	boxM.rotation.y = 1.57;
-	boxM.rotation.z = 1.57;
-    boxM.position.set(10, 90, 0);
+	boxM.rotation.z = 1.57*3/2;
+    boxM.position.set(11, 90, -9.7);
     boxM.castShadow = true;
 	
 	var boxer = new THREE.Object3D();
