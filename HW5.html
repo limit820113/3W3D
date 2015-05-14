@@ -131,8 +131,8 @@ function init() {
 		new THREE.MeshBasicMaterial( {
 			map: THREE.ImageUtils.loadTexture('images/floor-texture.jpg'),
 			polygonOffset: true,
-			polygonOffsetUnits: -25,
-			polygonOffsetFactor: -10
+			polygonOffsetUnits: -2,
+			polygonOffsetFactor: -1
 		} )
 	);
 	scene.add( cylinder );
@@ -144,8 +144,8 @@ function init() {
 		new THREE.MeshBasicMaterial( {
 			map: THREE.ImageUtils.loadTexture('images/floor-texture.jpg'),
 			polygonOffset: true,
-			polygonOffsetUnits: -25,
-			polygonOffsetFactor: -10
+			polygonOffsetUnits: -2,
+			polygonOffsetFactor: -1
 		} )
 	);
 	scene.add( plane );
@@ -283,8 +283,8 @@ function init() {
 				//color: 0xff0000,
 				side: THREE.DoubleSide,
 				polygonOffset: true,
-				polygonOffsetUnits: -20.0 + -10.0*(i+1),
-				polygonOffsetFactor: -10.0 + -5.0*(i+1)
+				polygonOffsetUnits: -3.0 + -0.1*(i+1),
+				polygonOffsetFactor: -2.0 + -0.05*(i+1)
 			})
 		);
 		
@@ -304,8 +304,8 @@ function init() {
 				//color: 0xff0000,
 				//side: THREE.DoubleSide,
 				polygonOffset: true,
-				polygonOffsetUnits: -10.0,
-				polygonOffsetFactor: -5.0
+				polygonOffsetUnits: -5.0,
+				polygonOffsetFactor: -2.5
 			})
 		);
 		
@@ -334,7 +334,7 @@ function init() {
 	
 	
 	cases[2].rotation.copy(wallBox3.rotation);
-	cases[2].position.x = 380;
+	cases[2].position.x = 395;
 	cases[2].position.z = 150;
 	
 	cases[3].position.x = 180;
