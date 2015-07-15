@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<!-- saved from url=(0066)http://www.cs.unm.edu/~angel/COURSERA/CODE/EXAMPLES/triangle2.html -->
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=Big5">
+<style>
+	canvas {
+		position: fixed;
+		top: 0;
+		left: 0;
+	}
+</style>
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+attribute vec4 vPosition;
+uniform float angle;
+
+void main()
+{
+	float twist = sqrt(vPosition.x*vPosition.x + vPosition.y*vPosition.y) * angle;
+	float xp = vPosition.x * cos(twist) - vPosition.y * sin(twist);
+    float yp = vPosition.x * sin(twist) + vPosition.y * cos(twist);
+	
+    gl_Position = vec4(xp, yp, 0, 1);
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+precision mediump float;
+
+void main()
+{
+    gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0 );
+}
+</script>
+
+<script type="text/javascript" src="./triangle2_files/webgl-utils.js"></script>
+<script type="text/javascript" src="./triangle2_files/initShaders.js"></script>
+<script type="text/javascript" src="./triangle2_files/flatten.js"></script>
+<script type="text/javascript" src="./triangle2_files/triangle2.js"></script>
+</head>
+
+<body>
+<canvas id="gl-canvas" width="512" height="512">
+Oops ... your browser doesn't support the HTML5 canvas element
+</canvas>
+
+
+</body></html>
