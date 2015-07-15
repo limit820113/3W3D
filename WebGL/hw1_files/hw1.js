@@ -7,15 +7,20 @@ var vertices = [];
 
 window.onload = function init()
 {
+	if (isNaN(document.getElementById("level").value) || isNaN(document.getElementById("degree").value))
+	{
+		alert("invalid input");
+		return;
+	}
     var canvas = document.getElementById( "gl-canvas" );
 	
-	canvas.width = window.innerWidth;
-	canvas.height = window.innerHeight;
+	canvas.width = canvas.height = (window.innerWidth < window.innerHeight) ? window.innerWidth : window.innerHeight;
+	vertices = [];
 
     gl = WebGLUtils.setupWebGL( canvas );
     if ( !gl ) { alert( "WebGL isn't available" ); }
 	
-	smaller(initVS, 5);
+	smaller(initVS, document.getElementById("level").value);
 
     //  Configure WebGL
 
@@ -28,8 +33,8 @@ window.onload = function init()
     gl.useProgram( program );
 
     gl.uniform1f(
-		gl.getUniformLocation ( program, "angle" ), 
-		1.0
+		gl.getUniformLocation ( program, "degree" ), 
+		document.getElementById("degree").value
 	);
 
     // Load the data into the GPU
