@@ -1,37 +1,45 @@
-<meta name = "viewport" content = "width=device-width, initial-scale=1.0, user-scalable=no">
 <html>
   <head>
-    <script type='text/javascript' src='https://www.google.com/jsapi'></script>
+    <script type="text/javascript" src="https://www.google.com/jsapi?autoload={'modules':[{'name':'visualization','version':'1','packages':['annotationchart']}]}"></script>
     <script type='text/javascript'>
-      google.load('visualization', '1', {'packages':['annotatedtimeline']});
+      google.load('visualization', '1', {'packages':['annotationchart']});
       google.setOnLoadCallback(drawChart);
       function drawChart() {
         var data = new google.visualization.DataTable();
         data.addColumn('date', 'Date');
-        data.addColumn('number', 'Sold Pencils');
-        data.addColumn('string', 'title1');
-        data.addColumn('string', 'text1');
-        data.addColumn('number', 'Sold Pens');
-        data.addColumn('string', 'title2');
-        data.addColumn('string', 'text2');
+        data.addColumn('number', 'Kepler-22b mission');
+        data.addColumn('string', 'Kepler title');
+        data.addColumn('string', 'Kepler text');
+        data.addColumn('number', 'Gliese 163 mission');
+        data.addColumn('string', 'Gliese title');
+        data.addColumn('string', 'Gliese text');
         data.addRows([
-          [new Date(2008, 1 ,1), 30000, undefined, undefined, 40645, undefined, undefined],
-          [new Date(2008, 1 ,2), 14045, undefined, undefined, 20374, undefined, undefined],
-          [new Date(2008, 1 ,3), 55022, undefined, undefined, 50766, undefined, undefined],
-          [new Date(2008, 1 ,4), 75284, undefined, undefined, 14334, 'Out of Stock','Ran out of stock on pens at 4pm'],
-          [new Date(2008, 1 ,5), 41476, 'Bought Pens','Bought 200k pens', 66467, undefined, undefined],
-          [new Date(2008, 1 ,6), 33322, undefined, undefined, 39463, undefined, undefined]
+          [new Date(2314, 2, 15), 12400, undefined, undefined,
+                                  10645, undefined, undefined],
+          [new Date(2314, 2, 16), 24045, 'Lalibertines', 'First encounter',
+                                  12374, undefined, undefined],
+          [new Date(2314, 2, 17), 35022, 'Lalibertines', 'They are very tall',
+                                  15766, 'Gallantors', 'First Encounter'],
+          [new Date(2314, 2, 18), 12284, 'Lalibertines', 'Attack on our crew!',
+                                  34334, 'Gallantors', 'Statement of shared principles'],
+          [new Date(2314, 2, 19), 8476, 'Lalibertines', 'Heavy casualties',
+                                  66467, 'Gallantors', 'Mysteries revealed'],
+          [new Date(2314, 2, 20), 0, 'Lalibertines', 'All crew lost',
+                                  79463, 'Gallantors', 'Omniscience achieved']
         ]);
 
-        var chart = new google.visualization.AnnotatedTimeLine(document.getElementById('chart_div'));
-        chart.draw(data, {displayAnnotations: false});
+        var chart = new google.visualization.AnnotationChart(document.getElementById('chart_div'));
+
+        var options = {
+          displayAnnotations: true
+        };
+
+        chart.draw(data, options);
       }
     </script>
   </head>
 
   <body>
-    // Note how you must specify the size of the container element explicitly!
-    <div id='chart_div' style='width: 240px; height: 175px;'></div>
-
+    <div id='chart_div' style='width: 900px; height: 500px;'></div>
   </body>
 </html>
