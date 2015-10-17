@@ -1,3 +1,4 @@
+<meta name = "viewport" content = "width=device-width, initial-scale=1.0, user-scalable=no">
 <html>
   <head>
     <script type="text/javascript" src="https://www.google.com/jsapi?autoload={'modules':[{'name':'visualization','version':'1','packages':['annotationchart']}]}"></script>
@@ -31,7 +32,7 @@
         var chart = new google.visualization.AnnotationChart(document.getElementById('chart_div'));
 
         var options = {
-          displayAnnotations: false, displayRangeSelector:false
+          displayAnnotations: false, displayRangeSelector:false, displayZoomButtons:false, scaleType:'maximized'
         };
 
         chart.draw(data, options);
