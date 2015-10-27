@@ -12,10 +12,11 @@
     
     <script type="text/javascript" src="https://www.google.com/jsapi?autoload={'modules':[{'name':'visualization','version':'1','packages':['annotationchart']}]}"></script>
     <script type='text/javascript'>
-      google.load('visualization', '1', {'packages':['annotationchart']});
+      var data, chart, options;
+	  google.load('visualization', '1', {'packages':['annotationchart']});
       google.setOnLoadCallback(drawChart);
       function drawChart() {
-        var data = new google.visualization.DataTable();
+        data = new google.visualization.DataTable();
         data.addColumn('date', 'Date');
         data.addColumn('number', 'Kepler-22b mission');
         data.addColumn('string', 'Kepler title');
@@ -24,25 +25,41 @@
         data.addColumn('string', 'Gliese title');
         data.addColumn('string', 'Gliese text');
         data.addRows([
-          [new Date(2314, 2, 15), 12400, undefined, undefined,
-                                  10645, undefined, undefined],
-          [new Date(2314, 2, 16), 24045, 'Lalibertines', 'First encounter',
-                                  12374, undefined, undefined],
-          [new Date(2314, 2, 17), 35022, 'Lalibertines', 'They are very tall',
-                                  15766, 'Gallantors', 'First Encounter'],
-          [new Date(2314, 2, 18), 12284, 'Lalibertines', 'Attack on our crew!',
-                                  34334, 'Gallantors', 'Statement of shared principles'],
-          [new Date(2314, 2, 19), 8476, 'Lalibertines', 'Heavy casualties',
-                                  66467, 'Gallantors', 'Mysteries revealed'],
-          [new Date(2314, 2, 20), 0, 'Lalibertines', 'All crew lost',
-                                  79463, 'Gallantors', 'Omniscience achieved']
+          [new Date(2314, 2, 15), 12400, undefined, undefined, 10645, undefined, undefined],
+          [new Date(2314, 2, 16), 24045, undefined, undefined, 12374, undefined, undefined],
+          [new Date(2314, 2, 17), 35022, undefined, undefined, 15766, undefined, undefined],
+          [new Date(2314, 2, 18), 12284, undefined, undefined, 34334, undefined, undefined],
+          [new Date(2314, 2, 19), 8476, undefined, undefined, 66467, undefined, undefined]
         ]);
-        var chart = new google.visualization.AnnotationChart(document.getElementById('chart_div'));
-        var options = {
+		data.addRows([
+          [new Date(2314, 2, 20), 0, undefined, undefined, 79463, undefined, undefined]
+        ]);
+		data.addRows([
+          [new Date(2314, 2, 21), 0, undefined, undefined, 79463, undefined, undefined]
+        ]);
+        chart = new google.visualization.AnnotationChart(document.getElementById('chart_div'));
+        options = {
           displayAnnotations: false, displayRangeSelector:true, displayZoomButtons:false, scaleType:'maximized'
         };
         chart.draw(data, options);
+		//chart.clearChart();
+		
+	  data.addRows([
+          [new Date(2314, 2, 22), 0, undefined, undefined, 79463, undefined, undefined]
+        ]);
+		chart.draw(data, options);
       }
+	  
+	  var date = 23;
+	  
+	  function update() {
+		date++;
+		data.addRows([
+          [new Date(2314, 2, date), 0, undefined, undefined, 79463, undefined, undefined]
+        ]);
+		chart.draw(data, options);
+	  }
+	  
     </script>
   </head>
 
