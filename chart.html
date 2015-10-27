@@ -31,26 +31,14 @@
           [new Date(2314, 2, 18), 12284, undefined, undefined, 34334, undefined, undefined],
           [new Date(2314, 2, 19), 8476, undefined, undefined, 66467, undefined, undefined]
         ]);
-		data.addRows([
-          [new Date(2314, 2, 20), 0, undefined, undefined, 79463, undefined, undefined]
-        ]);
-		data.addRows([
-          [new Date(2314, 2, 21), 0, undefined, undefined, 79463, undefined, undefined]
-        ]);
         chart = new google.visualization.AnnotationChart(document.getElementById('chart_div'));
         options = {
           displayAnnotations: false, displayRangeSelector:true, displayZoomButtons:false, scaleType:'maximized'
         };
         chart.draw(data, options);
-		//chart.clearChart();
-		
-	  data.addRows([
-          [new Date(2314, 2, 22), 0, undefined, undefined, 79463, undefined, undefined]
-        ]);
-		chart.draw(data, options);
       }
 	  
-	  var date = 23;
+	  var date = 19;
 	  
 	  function update() {
 		date++;
@@ -58,7 +46,10 @@
           [new Date(2314, 2, date), 0, undefined, undefined, 79463, undefined, undefined]
         ]);
 		chart.draw(data, options);
+		chart.setVisibleChartRange(new Date(2314, 2, 15), new Date(2314, 2, date));
+		//setTimeout(update, 3000);
 	  }
+	  //setTimeout(update, 3000);
 	  
     </script>
   </head>
